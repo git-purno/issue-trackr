@@ -62,4 +62,9 @@ Route::post('/issues/{id}/status', [IssueController::class,'updateStatus']);
 
 Route::get('/issues/{id}', [IssueController::class,'show']);
 
+use App\Http\Controllers\CommentController;
+
+Route::post('/issues/{issue}/comments', [CommentController::class,'store'])
+->middleware('auth');
+
 require __DIR__.'/auth.php';

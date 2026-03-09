@@ -35,4 +35,37 @@
 
 </div>
 
+<h3 class="text-lg font-semibold mt-6 mb-3">Comments</h3>
+
+@foreach($issue->comments as $comment)
+
+<div class="bg-gray-100 p-3 rounded mb-2">
+
+<strong>{{ $comment->user->name }}</strong>
+
+<p>{{ $comment->comment }}</p>
+
+</div>
+
+@endforeach
+<form method="POST" action="/issues/{{ $issue->id }}/comments">
+
+@csrf
+
+<textarea
+name="comment"
+class="border p-2 w-full rounded"
+placeholder="Write a comment..."
+required
+></textarea>
+
+<button
+type="submit"
+class="mt-2 bg-blue-600 text-white px-4 py-2 rounded"
+>
+Add Comment
+</button>
+
+</form>
+
 </x-app-layout>
