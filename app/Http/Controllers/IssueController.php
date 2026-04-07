@@ -18,11 +18,13 @@ class IssueController extends Controller
             ->latest()
             ->paginate(10);
 
+        $issueStatsQuery = Issue::query()->visibleTo($user);
+
         $stats = [
-            'open' => Issue::visibleTo(Issue::query(), $user)->where('status', 'open')->count(),
-            'in_progress' => Issue::visibleTo(Issue::query(), $user)->where('status', 'in_progress')->count(),
-            'resolved' => Issue::visibleTo(Issue::query(), $user)->where('status', 'resolved')->count(),
-            'closed' => Issue::visibleTo(Issue::query(), $user)->where('status', 'closed')->count(),
+            'open' => (clone $issueStatsQuery)->where('status', 'open')->count(),
+            'in_progress' => (clone $issueStatsQuery)->where('status', 'in_progress')->count(),
+            'resolved' => (clone $issueStatsQuery)->where('status', 'resolved')->count(),
+            'closed' => (clone $issueStatsQuery)->where('status', 'closed')->count(),
         ];
 
         return view('issues.index', compact('issues', 'stats'));

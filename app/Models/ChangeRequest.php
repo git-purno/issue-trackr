@@ -66,6 +66,13 @@ class ChangeRequest extends Model
             return $query;
         }
 
+        if ($user->hasRole('engineer')) {
+            return $query->where(function ($builder) use ($user) {
+                $builder->where('user_id', $user->id)
+                    ->orWhereIn('status', ['scheduled', 'completed']);
+            });
+        }
+
         return $query->where('user_id', $user->id);
     }
 }

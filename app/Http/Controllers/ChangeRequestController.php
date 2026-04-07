@@ -17,11 +17,13 @@ class ChangeRequestController extends Controller
             ->latest()
             ->paginate(10);
 
+        $changeStatsQuery = ChangeRequest::query()->visibleTo($user);
+
         $stats = [
-            'submitted' => ChangeRequest::visibleTo(ChangeRequest::query(), $user)->where('status', 'submitted')->count(),
-            'in_review' => ChangeRequest::visibleTo(ChangeRequest::query(), $user)->whereIn('status', ['analyst_approved', 'manager_approved', 'admin_approved'])->count(),
-            'scheduled' => ChangeRequest::visibleTo(ChangeRequest::query(), $user)->where('status', 'scheduled')->count(),
-            'completed' => ChangeRequest::visibleTo(ChangeRequest::query(), $user)->where('status', 'completed')->count(),
+            'submitted' => (clone $changeStatsQuery)->where('status', 'submitted')->count(),
+            'in_review' => (clone $changeStatsQuery)->whereIn('status', ['analyst_approved', 'manager_approved', 'admin_approved'])->count(),
+            'scheduled' => (clone $changeStatsQuery)->where('status', 'scheduled')->count(),
+            'completed' => (clone $changeStatsQuery)->where('status', 'completed')->count(),
         ];
 
         return view('change_requests.index', compact('requests', 'stats'));
@@ -193,6 +195,10 @@ class ChangeRequestController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin', 'manager', 'analyst')) {
+            return;
+        }
+
+        if ($user->hasRole('engineer') && in_array($changeRequest->status, ['scheduled', 'completed'], true)) {
             return;
         }
 
