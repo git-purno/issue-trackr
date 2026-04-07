@@ -1,83 +1,35 @@
 <?php
 
+use App\Http\Controllers\ChangeRequestController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ChangeRequestController;
-
-Route::middleware(['auth'])->group(function () {
-
-    Route::get('/change-requests', [ChangeRequestController::class,'index']);
-    Route::get('/change-requests/create', [ChangeRequestController::class,'create']);
-    Route::post('/change-requests', [ChangeRequestController::class,'store']);
-
-});
-
-Route::middleware(['auth'])->group(function () {
-
-    Route::get('/issues', [IssueController::class, 'index']);
-    Route::get('/issues/create', [IssueController::class, 'create']);
-    Route::post('/issues', [IssueController::class, 'store']);
-
-});
 
 Route::get('/', function () {
     return view('home');
 });
 
-Route::middleware(['auth','role:admin'])->group(function () {
-
-    Route::get('/admin-dashboard', function () {
-        return "Admin Dashboard";
-    });
-
-});
-
-Route::middleware(['auth','role:manager'])->group(function () {
-
-    Route::get('/manager-dashboard', function () {
-        return "Manager Dashboard";
-    });
-
-});
-
-Route::middleware(['auth','role:engineer'])->group(function () {
-
-    Route::get('/engineer-dashboard', function () {
-        return "Engineer Dashboard";
-    });
-
-});
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('issues', IssueController::class);
+    Route::get('/issues/{issue}/assign', [IssueController::class, 'assignForm'])->name('issues.assign.form')->middleware('role:admin,manager');
+    Route::post('/issues/{issue}/assign', [IssueController::class, 'assign'])->name('issues.assign')->middleware('role:admin,manager');
+    Route::get('/issues/{issue}/status', [IssueController::class, 'statusForm'])->name('issues.status.form');
+    Route::patch('/issues/{issue}/status', [IssueController::class, 'updateStatus'])->name('issues.status.update');
+    Route::post('/issues/{issue}/comments', [CommentController::class, 'store'])->name('issues.comments.store');
+
+    Route::resource('change-requests', ChangeRequestController::class);
+    Route::post('/change-requests/{changeRequest}/approve', [ChangeRequestController::class, 'approve'])->name('change-requests.approve');
+    Route::get('/change-requests/{changeRequest}/schedule', [ChangeRequestController::class, 'scheduleForm'])->name('change-requests.schedule.form')->middleware('role:admin');
+    Route::patch('/change-requests/{changeRequest}/schedule', [ChangeRequestController::class, 'schedule'])->name('change-requests.schedule')->middleware('role:admin');
+    Route::post('/change-requests/{changeRequest}/verify', [ChangeRequestController::class, 'verify'])->name('change-requests.verify')->middleware('role:engineer');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-Route::middleware(['auth'])->group(function () {
-
-    Route::get('/issues/{id}/assign', [IssueController::class,'assignForm']);
-    Route::post('/issues/{id}/assign', [IssueController::class,'assign']);
-
-});
-
-Route::get('/issues/{id}/status', [IssueController::class,'statusForm']);
-Route::post('/issues/{id}/status', [IssueController::class,'updateStatus']);
-
-Route::get('/issues/{id}', [IssueController::class,'show']);
-
-use App\Http\Controllers\CommentController;
-
-Route::post('/issues/{issue}/comments', [CommentController::class,'store'])
-->middleware('auth');
-
-Route::post('/change-requests/{id}/approve',
-[ChangeRequestController::class,'approve'])
-->middleware('auth');
 
 require __DIR__.'/auth.php';

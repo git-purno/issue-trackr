@@ -1,116 +1,143 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
+            Dashboard
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mb-6">
-                <div class="surface-card p-6">
-                    <p class="text-sm text-slate-500 mb-2">Assigned Tasks</p>
-                    <p class="text-3xl font-bold text-slate-900">12</p>
-                    <p class="text-sm text-slate-600 mt-2">Across issues and change requests.</p>
-                </div>
-
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                 <div class="surface-card p-6">
                     <p class="text-sm text-slate-500 mb-2">Open Issues</p>
-                    <p class="text-3xl font-bold text-slate-900">28</p>
-                    <p class="text-sm text-slate-600 mt-2">Includes active and on-hold work items.</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $issueStats['open'] }}</p>
                 </div>
-
                 <div class="surface-card p-6">
-                    <p class="text-sm text-slate-500 mb-2">Pending Approvals</p>
-                    <p class="text-3xl font-bold text-slate-900">6</p>
-                    <p class="text-sm text-slate-600 mt-2">Awaiting analyst, manager, or admin action.</p>
+                    <p class="text-sm text-slate-500 mb-2">In Progress Issues</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $issueStats['in_progress'] }}</p>
                 </div>
-
                 <div class="surface-card p-6">
                     <p class="text-sm text-slate-500 mb-2">Scheduled Changes</p>
-                    <p class="text-3xl font-bold text-slate-900">4</p>
-                    <p class="text-sm text-slate-600 mt-2">Approved requests lined up for rollout.</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $changeStats['scheduled'] }}</p>
+                </div>
+                <div class="surface-card p-6">
+                    <p class="text-sm text-slate-500 mb-2">Completed Changes</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $changeStats['completed'] }}</p>
                 </div>
             </div>
 
-            <div class="grid gap-6 lg:grid-cols-3">
-                <div class="surface-card p-6 lg:col-span-2">
-                    <div class="flex items-center justify-between mb-5">
-                        <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Overview</p>
-                            <h3 class="text-xl font-semibold text-slate-900 mt-1">Operational summary</h3>
-                        </div>
-                        <span class="soft-badge">Workspace status</span>
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div class="surface-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-900">Issue Overview</h3>
+                        <a href="{{ route('issues.index') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all</a>
                     </div>
-
-                    <div class="space-y-4">
+                    <div class="grid gap-4 sm:grid-cols-2">
                         <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Work intake</p>
-                            <p>Requests enter the system with consistent detail so teams can act quickly and clearly.</p>
+                            <p class="font-semibold text-slate-800 mb-1">Open</p>
+                            <p>{{ $issueStats['open'] }} items awaiting action.</p>
                         </div>
-
                         <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Approval control</p>
-                            <p>Review paths remain visible, accountable, and easier to manage across teams.</p>
+                            <p class="font-semibold text-slate-800 mb-1">Resolved</p>
+                            <p>{{ $issueStats['resolved'] }} issues completed and ready to close.</p>
                         </div>
-
                         <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Delivery oversight</p>
-                            <p>Dashboards and updates keep ongoing work aligned without adding noise to the interface.</p>
+                            <p class="font-semibold text-slate-800 mb-1">In Progress</p>
+                            <p>{{ $issueStats['in_progress'] }} issues currently assigned.</p>
+                        </div>
+                        <div class="feature-item">
+                            <p class="font-semibold text-slate-800 mb-1">Closed</p>
+                            <p>{{ $issueStats['closed'] }} issues fully completed.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="surface-card p-6">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4">Quick Actions</p>
-                    <div class="space-y-3">
-                        <a href="/issues/create" class="block rounded-lg bg-green-600 px-4 py-3 text-center font-medium text-white hover:bg-green-700">
-                            Submit New Issue
-                        </a>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-900">Change Request Overview</h3>
+                        <a href="{{ route('change-requests.index') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all</a>
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="feature-item">
+                            <p class="font-semibold text-slate-800 mb-1">Submitted</p>
+                            <p>{{ $changeStats['submitted'] }} requests waiting to enter review.</p>
+                        </div>
+                        <div class="feature-item">
+                            <p class="font-semibold text-slate-800 mb-1">In Review</p>
+                            <p>{{ $changeStats['in_review'] }} requests moving through approvals.</p>
+                        </div>
+                        <div class="feature-item">
+                            <p class="font-semibold text-slate-800 mb-1">Scheduled</p>
+                            <p>{{ $changeStats['scheduled'] }} approved changes planned for execution.</p>
+                        </div>
+                        <div class="feature-item">
+                            <p class="font-semibold text-slate-800 mb-1">Completed</p>
+                            <p>{{ $changeStats['completed'] }} verified changes completed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <a href="/issues" class="block rounded-lg bg-blue-600 px-4 py-3 text-center font-medium text-white hover:bg-blue-700">
-                            Review Issues
-                        </a>
-
-                        <a href="/change-requests/create" class="block rounded-lg border border-slate-200 bg-white px-4 py-3 text-center font-medium text-slate-700 hover:bg-slate-50">
-                            Create Change Request
-                        </a>
-
-                        <a href="/change-requests" class="block rounded-lg border border-slate-200 bg-white px-4 py-3 text-center font-medium text-slate-700 hover:bg-slate-50">
-                            View Approvals Queue
-                        </a>
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div class="surface-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-900">Recent Issues</h3>
+                        <a href="{{ route('issues.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Create Issue</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-left text-slate-500">
+                                    <th class="pb-3 pr-4">Title</th>
+                                    <th class="pb-3 pr-4">Priority</th>
+                                    <th class="pb-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($recentIssues as $issue)
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4"><a href="{{ route('issues.show', $issue) }}" class="font-medium text-slate-800 hover:text-blue-600">{{ $issue->title }}</a></td>
+                                        <td class="py-3 pr-4 capitalize">{{ str_replace('_', ' ', $issue->priority) }}</td>
+                                        <td class="py-3 capitalize">{{ str_replace('_', ' ', $issue->status) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="py-4 text-slate-500">No issues available yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="surface-card p-6 lg:col-span-3">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Highlights</p>
-                            <h3 class="text-xl font-semibold text-slate-900 mt-1">Key workspace strengths</h3>
-                        </div>
-                        <span class="soft-badge">Operational view</span>
+                <div class="surface-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-900">Recent Change Requests</h3>
+                        <a href="{{ route('change-requests.create') }}" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">New Request</a>
                     </div>
-
-                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mt-6">
-                        <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Consistency</p>
-                            <p>Standardized process reduces ambiguity across requests and approvals.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Accountability</p>
-                            <p>Clear ownership and tracked decisions support better follow-through.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Visibility</p>
-                            <p>Teams can quickly understand current workload, pending items, and priorities.</p>
-                        </div>
-
-                        <div class="feature-item">
-                            <p class="font-semibold text-slate-800 mb-1">Control</p>
-                            <p>Operational decisions are easier to guide with a calmer, more focused interface.</p>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-left text-slate-500">
+                                    <th class="pb-3 pr-4">Title</th>
+                                    <th class="pb-3 pr-4">Impact</th>
+                                    <th class="pb-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($recentChangeRequests as $request)
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4"><a href="{{ route('change-requests.show', $request) }}" class="font-medium text-slate-800 hover:text-blue-600">{{ $request->title }}</a></td>
+                                        <td class="py-3 pr-4 capitalize">{{ $request->impact_level }}</td>
+                                        <td class="py-3 capitalize">{{ str_replace('_', ' ', $request->status) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="py-4 text-slate-500">No change requests available yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

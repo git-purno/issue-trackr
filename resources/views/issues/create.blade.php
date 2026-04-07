@@ -1,36 +1,24 @@
 <x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-slate-900">Create Issue</h2>
+            <a href="{{ route('issues.index') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">Back to issues</a>
+        </div>
+    </x-slot>
 
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <h2 class="text-xl font-semibold mb-4">Submit Issue</h2>
+    <div class="py-8">
+        <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
+            <div class="surface-card p-6 md:p-8">
+                <form method="POST" action="{{ route('issues.store') }}" class="space-y-6">
+                    @csrf
+                    @include('issues.partials.form')
 
-        <form method="POST" action="/issues">
-            @csrf
-
-            <div class="mb-4">
-                <label>Title</label>
-                <input type="text" name="title" class="border p-2 w-full" required>
+                    <div class="flex justify-end gap-3">
+                        <a href="{{ route('issues.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</a>
+                        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Submit Issue</button>
+                    </div>
+                </form>
             </div>
-
-            <div class="mb-4">
-                <label>Description</label>
-                <textarea name="description" class="border p-2 w-full" required></textarea>
-            </div>
-
-            <div class="mb-4">
-                <label>Priority</label>
-                <select name="priority" class="border p-2 w-full">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
-            </div>
-            <button type="submit" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-    Submit Issue
-</button>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2">
-                Submit Issue
-            </button>
-        </form>
+        </div>
     </div>
-
 </x-app-layout>
