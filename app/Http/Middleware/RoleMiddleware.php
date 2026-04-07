@@ -8,11 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $roles = array_map('trim', explode(',', $role));
+        $roles = array_map(
+            static fn ($value) => strtolower(trim($value)),
+            $roles
+        );
 
-        if (!$request->user() || !in_array($request->user()->role, $roles, true)) {
+        $userRole = strtolower(trim((string) optional($request->user())->role));
+
+        if (!$request->user() || !in_array($userRole, $roles, true)) {
             abort(403, 'Unauthorized access');
         }
 
