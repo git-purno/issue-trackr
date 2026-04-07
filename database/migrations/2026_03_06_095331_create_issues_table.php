@@ -6,34 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
-{
-    Schema::create('issues', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::create('issues', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+    }
 
-        $table->string('title');
-        $table->text('description');
-
-        $table->string('priority')->default('medium');
-        $table->string('status')->default('open');
-
-        $table->unsignedBigInteger('user_id'); 
-        $table->unsignedBigInteger('assigned_to')->nullable();
-
-        $table->string('attachment')->nullable();
-
-        $table->timestamps();
-    });
-}
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
-{
-    Schema::dropIfExists('issues');
-}
+    {
+        Schema::dropIfExists('issues');
+    }
 };

@@ -20,6 +20,14 @@
 Dashboard
 </x-nav-link>
 
+<x-nav-link href="/issues" :active="request()->is('issues') || request()->is('issues/*')">
+Issues
+</x-nav-link>
+
+<x-nav-link href="/change-requests" :active="request()->is('change-requests') || request()->is('change-requests/*')">
+Change Requests
+</x-nav-link>
+
 </div>
 
 </div>
@@ -40,8 +48,7 @@ Dashboard
 <div class="ms-1">
 <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
 <path fill-rule="evenodd"
-d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4
-4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
 clip-rule="evenodd"/>
 </svg>
 </div>
@@ -117,6 +124,22 @@ d="M6 18L18 6M6 6l12 12" />
 
 </div>
 
+</div>
+</div>
+
+<div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-100">
+<div class="space-y-1 pb-3 pt-2">
+<x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+Dashboard
+</x-responsive-nav-link>
+
+<x-responsive-nav-link href="/issues" :active="request()->is('issues') || request()->is('issues/*')">
+Issues
+</x-responsive-nav-link>
+
+<x-responsive-nav-link href="/change-requests" :active="request()->is('change-requests') || request()->is('change-requests/*')">
+Change Requests
+</x-responsive-nav-link>
 </div>
 </div>
 
