@@ -4,7 +4,9 @@ use App\Http\Controllers\ChangeRequestController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IssueController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -13,6 +15,11 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('role:admin,manager,analyst');
+    Route::get('/reports/export/{type}', [ReportController::class, 'export'])->name('reports.export')->middleware('role:admin,manager,analyst');
 
     Route::resource('issues', IssueController::class);
     Route::get('/issues/{issue}/assign', [IssueController::class, 'assignForm'])->name('issues.assign.form')->middleware('role:admin,manager');

@@ -141,6 +141,50 @@
                     </div>
                 </div>
             </div>
+
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div class="surface-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-900">Unread Notifications</h3>
+                        <a href="{{ route('notifications.index') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">Open notifications</a>
+                    </div>
+                    <div class="space-y-3">
+                        @forelse (auth()->user()->unreadNotifications->take(5) as $notification)
+                            <div class="feature-item">
+                                <div class="flex items-center justify-between gap-4">
+                                    <p class="font-semibold text-slate-800">{{ data_get($notification->data, 'title') }}</p>
+                                    <span class="soft-badge">{{ ucfirst(data_get($notification->data, 'category', 'update')) }}</span>
+                                </div>
+                                <p class="mt-2 text-sm text-slate-600">{{ data_get($notification->data, 'message') }}</p>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500">No unread notifications.</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="surface-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                        @if (auth()->user()->hasRole('admin', 'manager', 'analyst'))
+                            <a href="{{ route('reports.index') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">Open reports</a>
+                        @endif
+                    </div>
+                    <div class="space-y-3">
+                        @forelse ($recentActivities as $activity)
+                            <div class="feature-item">
+                                <div class="flex items-center justify-between gap-4">
+                                    <p class="font-semibold text-slate-800">{{ $activity->description }}</p>
+                                    <p class="text-xs text-slate-500">{{ $activity->created_at->diffForHumans() }}</p>
+                                </div>
+                                <p class="mt-1 text-xs text-slate-500">{{ $activity->user?->name ?? 'System' }} • {{ str_replace('.', ' / ', $activity->event) }}</p>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500">No activity recorded yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

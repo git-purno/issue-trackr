@@ -21,16 +21,29 @@ Issues
 <x-nav-link :href="route('change-requests.index')" :active="request()->routeIs('change-requests.*')">
 Change Requests
 </x-nav-link>
+
+<x-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+Notifications
+</x-nav-link>
+
+@if (auth()->user()?->hasRole('admin', 'manager', 'analyst'))
+<x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+Reports
+</x-nav-link>
+@endif
 </div>
 </div>
 
 <div class="hidden sm:flex sm:items-center sm:ms-6">
 @auth
-<x-dropdown align="right" width="48">
+<x-dropdown align="right" width="56">
 <x-slot name="trigger">
 <button class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white rounded-md hover:text-gray-700">
 <div>{{ Auth::user()->name }}</div>
-<div class="ms-1">
+@if (Auth::user()->unreadNotifications()->count())
+<span class="ml-3 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">{{ Auth::user()->unreadNotifications()->count() }}</span>
+@endif
+<div class="ms-2">
 <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
 </svg>
@@ -42,6 +55,17 @@ Change Requests
 <div class="px-4 py-2 text-xs uppercase tracking-widest text-slate-400">
 {{ Auth::user()->role }}
 </div>
+<x-dropdown-link :href="route('notifications.index')">
+Notifications
+@if (Auth::user()->unreadNotifications()->count())
+<span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">{{ Auth::user()->unreadNotifications()->count() }}</span>
+@endif
+</x-dropdown-link>
+@if (Auth::user()->hasRole('admin', 'manager', 'analyst'))
+<x-dropdown-link :href="route('reports.index')">
+Reports
+</x-dropdown-link>
+@endif
 <x-dropdown-link :href="route('profile.edit')">
 Profile
 </x-dropdown-link>
@@ -87,6 +111,14 @@ Issues
 <x-responsive-nav-link :href="route('change-requests.index')" :active="request()->routeIs('change-requests.*')">
 Change Requests
 </x-responsive-nav-link>
+<x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+Notifications
+</x-responsive-nav-link>
+@if (auth()->user()?->hasRole('admin', 'manager', 'analyst'))
+<x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+Reports
+</x-responsive-nav-link>
+@endif
 </div>
 </div>
 

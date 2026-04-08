@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Issue;
 use App\Models\User;
+use App\Services\ActivityLogService;
+use App\Services\SystemNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class IssueController extends Controller
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLogService,
+        private readonly SystemNotificationService $notificationService,
+    ) {
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -43,11 +51,27 @@ class IssueController extends Controller
             'priority' => ['required', 'in:low,medium,high'],
         ]);
 
-        Issue::create([
+        $issue = Issue::create([
             ...$validated,
             'status' => 'open',
             'user_id' => Auth::id(),
         ]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            $issue,
+            'issue.created',
+            "Issue \"{$issue->title}\" was created.",
+            ['priority' => $issue->priority]
+        );
+
+        $this->notificationService->notifyUsers(
+            User::whereIn('role', ['admin', 'manager'])->get(),
+            'New issue submitted',
+            "A new issue titled \"{$issue->title}\" has been submitted.",
+            route('issues.show', $issue),
+            'update'
+        );
 
         return redirect()
             ->route('issues.index')
@@ -82,6 +106,14 @@ class IssueController extends Controller
 
         $issue->update($validated);
 
+        $this->activityLogService->log(
+            Auth::id(),
+            $issue,
+            'issue.updated',
+            "Issue \"{$issue->title}\" details were updated.",
+            ['priority' => $issue->priority]
+        );
+
         return redirect()
             ->route('issues.show', $issue)
             ->with('success', 'Issue updated successfully.');
@@ -92,6 +124,13 @@ class IssueController extends Controller
         $user = Auth::user();
 
         abort_unless($user->hasRole('admin', 'manager') || $issue->user_id === $user->id, 403);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            $issue,
+            'issue.deleted',
+            "Issue \"{$issue->title}\" was deleted."
+        );
 
         $issue->delete();
 
@@ -126,6 +165,22 @@ class IssueController extends Controller
             'status' => $issue->status === 'open' ? 'in_progress' : $issue->status,
         ]);
 
+        $this->activityLogService->log(
+            Auth::id(),
+            $issue,
+            'issue.assigned',
+            "Issue \"{$issue->title}\" was assigned to {$engineer->name}.",
+            ['assigned_to' => $engineer->id]
+        );
+
+        $this->notificationService->notifyUsers(
+            [$engineer, $issue->user],
+            'Issue assigned',
+            "Issue \"{$issue->title}\" has been assigned to {$engineer->name}.",
+            route('issues.show', $issue),
+            'approval'
+        );
+
         return redirect()
             ->route('issues.show', $issue)
             ->with('success', 'Issue assigned successfully.');
@@ -146,9 +201,32 @@ class IssueController extends Controller
             'status' => ['required', 'in:open,in_progress,resolved,closed'],
         ]);
 
+        $previousStatus = $issue->status;
+
         $issue->update([
             'status' => $validated['status'],
         ]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            $issue,
+            'issue.status_updated',
+            "Issue \"{$issue->title}\" status changed from {$previousStatus} to {$issue->status}.",
+            ['from' => $previousStatus, 'to' => $issue->status]
+        );
+
+        $recipients = collect([
+            $issue->user,
+            $issue->assignedEngineer,
+        ])->filter();
+
+        $this->notificationService->notifyUsers(
+            $recipients,
+            'Issue status updated',
+            "Issue \"{$issue->title}\" is now marked as " . str_replace('_', ' ', $issue->status) . '.',
+            route('issues.show', $issue),
+            'update'
+        );
 
         return redirect()
             ->route('issues.show', $issue)
@@ -196,3 +274,4 @@ class IssueController extends Controller
         abort(403);
     }
 }
+

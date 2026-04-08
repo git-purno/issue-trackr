@@ -32,6 +32,11 @@ class Issue extends Model
     {
         return $this->hasMany(Comment::class)->latest();
     }
+
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'subject');
+    }
     
     public function scopeVisibleTo($query, User $user)
     {

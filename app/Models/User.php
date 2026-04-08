@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->hasMany(ChangeRequest::class, 'admin_id');
     }
 
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
     public function hasRole(string ...$roles): bool
     {
         $currentRole = strtolower(trim((string) $this->role));

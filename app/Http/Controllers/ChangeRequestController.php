@@ -3,11 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChangeRequest;
+use App\Models\User;
+use App\Services\ActivityLogService;
+use App\Services\SystemNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ChangeRequestController extends Controller
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLogService,
+        private readonly SystemNotificationService $notificationService,
+    ) {
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -51,6 +60,22 @@ class ChangeRequestController extends Controller
             'user_id' => Auth::id(),
         ]);
 
+        $this->activityLogService->log(
+            Auth::id(),
+            $changeRequest,
+            'change_request.created',
+            "Change request \"{$changeRequest->title}\" was submitted.",
+            ['impact_level' => $changeRequest->impact_level]
+        );
+
+        $this->notificationService->notifyUsers(
+            User::whereIn('role', ['admin', 'manager', 'analyst'])->get(),
+            'New change request submitted',
+            "A new change request titled \"{$changeRequest->title}\" has been submitted.",
+            route('change-requests.show', $changeRequest),
+            'update'
+        );
+
         return redirect()
             ->route('change-requests.show', $changeRequest)
             ->with('success', 'Change request submitted successfully.');
@@ -87,6 +112,13 @@ class ChangeRequestController extends Controller
 
         $changeRequest->update($validated);
 
+        $this->activityLogService->log(
+            Auth::id(),
+            $changeRequest,
+            'change_request.updated',
+            "Change request \"{$changeRequest->title}\" was updated."
+        );
+
         return redirect()
             ->route('change-requests.show', $changeRequest)
             ->with('success', 'Change request updated successfully.');
@@ -100,6 +132,13 @@ class ChangeRequestController extends Controller
             $user->hasRole('admin') ||
             ($changeRequest->user_id === $user->id && $changeRequest->status === 'submitted'),
             403
+        );
+
+        $this->activityLogService->log(
+            Auth::id(),
+            $changeRequest,
+            'change_request.deleted',
+            "Change request \"{$changeRequest->title}\" was deleted."
         );
 
         $changeRequest->delete();
@@ -120,6 +159,21 @@ class ChangeRequestController extends Controller
                 'analyst_approved_at' => now(),
             ]);
 
+            $this->activityLogService->log(
+                $user->id,
+                $changeRequest,
+                'change_request.approved.analyst',
+                "Change request \"{$changeRequest->title}\" was approved by analyst {$user->name}."
+            );
+
+            $this->notificationService->notifyUsers(
+                collect([$changeRequest->user, User::where('role', 'manager')->first()])->filter(),
+                'Change request approved by analyst',
+                "Change request \"{$changeRequest->title}\" has completed analyst review.",
+                route('change-requests.show', $changeRequest),
+                'approval'
+            );
+
             return back()->with('success', 'Change request approved by analyst.');
         }
 
@@ -130,6 +184,21 @@ class ChangeRequestController extends Controller
                 'manager_approved_at' => now(),
             ]);
 
+            $this->activityLogService->log(
+                $user->id,
+                $changeRequest,
+                'change_request.approved.manager',
+                "Change request \"{$changeRequest->title}\" was approved by manager {$user->name}."
+            );
+
+            $this->notificationService->notifyUsers(
+                collect([$changeRequest->user, User::where('role', 'admin')->first()])->filter(),
+                'Change request approved by manager',
+                "Change request \"{$changeRequest->title}\" has completed manager review.",
+                route('change-requests.show', $changeRequest),
+                'approval'
+            );
+
             return back()->with('success', 'Change request approved by manager.');
         }
 
@@ -139,6 +208,21 @@ class ChangeRequestController extends Controller
                 'admin_id' => $user->id,
                 'admin_approved_at' => now(),
             ]);
+
+            $this->activityLogService->log(
+                $user->id,
+                $changeRequest,
+                'change_request.approved.admin',
+                "Change request \"{$changeRequest->title}\" was approved by admin {$user->name}."
+            );
+
+            $this->notificationService->notifyUsers(
+                [$changeRequest->user],
+                'Change request fully approved',
+                "Change request \"{$changeRequest->title}\" is now fully approved and ready for scheduling.",
+                route('change-requests.show', $changeRequest),
+                'approval'
+            );
 
             return back()->with('success', 'Change request approved by admin.');
         }
@@ -170,6 +254,27 @@ class ChangeRequestController extends Controller
             'status' => 'scheduled',
         ]);
 
+        $this->activityLogService->log(
+            Auth::id(),
+            $changeRequest,
+            'change_request.scheduled',
+            "Change request \"{$changeRequest->title}\" was scheduled for {$changeRequest->scheduled_at->format('d M Y, h:i A')}.",
+            ['scheduled_at' => $changeRequest->scheduled_at?->toDateTimeString()]
+        );
+
+        $this->notificationService->notifyUsers(
+            collect([
+                $changeRequest->user,
+                $changeRequest->analyst,
+                $changeRequest->manager,
+                $changeRequest->admin,
+            ])->filter()->merge(User::where('role', 'engineer')->get()),
+            'Change request scheduled',
+            "Change request \"{$changeRequest->title}\" has been scheduled for {$changeRequest->scheduled_at->format('d M Y, h:i A')}.",
+            route('change-requests.show', $changeRequest),
+            'deadline'
+        );
+
         return redirect()
             ->route('change-requests.show', $changeRequest)
             ->with('success', 'Change request scheduled successfully.');
@@ -184,6 +289,26 @@ class ChangeRequestController extends Controller
             'verified' => true,
             'status' => 'completed',
         ]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            $changeRequest,
+            'change_request.verified',
+            "Change request \"{$changeRequest->title}\" was verified and completed."
+        );
+
+        $this->notificationService->notifyUsers(
+            collect([
+                $changeRequest->user,
+                $changeRequest->analyst,
+                $changeRequest->manager,
+                $changeRequest->admin,
+            ])->filter(),
+            'Change request completed',
+            "Change request \"{$changeRequest->title}\" has been verified and marked completed.",
+            route('change-requests.show', $changeRequest),
+            'update'
+        );
 
         return redirect()
             ->route('change-requests.show', $changeRequest)

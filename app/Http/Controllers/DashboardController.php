@@ -2,15 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\ChangeRequest;
 use App\Models\Issue;
+use App\Services\SystemNotificationService;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly SystemNotificationService $notificationService,
+    ) {
+    }
+
     public function index()
     {
         $user = Auth::user();
+        $this->notificationService->sendDeadlineNotifications();
 
         $issueBaseQuery = Issue::with(['user', 'assignedEngineer'])->visibleTo($user);
         $changeBaseQuery = ChangeRequest::with(['user', 'analyst', 'manager', 'admin'])->visibleTo($user);
@@ -31,7 +39,11 @@ class DashboardController extends Controller
 
         $recentIssues = (clone $issueBaseQuery)->latest()->take(5)->get();
         $recentChangeRequests = (clone $changeBaseQuery)->latest()->take(5)->get();
+        $recentActivities = ActivityLog::with('user')
+            ->latest()
+            ->take(6)
+            ->get();
 
-        return view('dashboard', compact('issueStats', 'changeStats', 'recentIssues', 'recentChangeRequests'));
+        return view('dashboard', compact('issueStats', 'changeStats', 'recentIssues', 'recentChangeRequests', 'recentActivities'));
     }
 }

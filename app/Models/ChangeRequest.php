@@ -60,6 +60,11 @@ class ChangeRequest extends Model
         return $this->belongsTo(User::class, 'admin_id');
     }
 
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'subject');
+    }
+
     public function scopeVisibleTo($query, User $user)
     {
         if ($user->hasRole('admin', 'manager', 'analyst')) {
