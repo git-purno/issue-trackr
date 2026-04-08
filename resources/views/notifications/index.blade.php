@@ -33,7 +33,7 @@
                         </div>
                         <div class="flex flex-wrap gap-2">
                             @if ($notification->resolved_url)
-                                <a href="{{ $notification->resolved_url }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Open</a>
+                                <a href="{{ route('notifications.open', $notification->id) }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Open</a>
                             @else
                                 <span class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-400">Unavailable</span>
                             @endif

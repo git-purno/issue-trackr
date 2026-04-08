@@ -31,6 +31,26 @@ class NotificationController extends Controller
         return view('notifications.index', compact('notifications'));
     }
 
+    public function open(string $notification)
+    {
+        $notificationModel = Auth::user()
+            ->notifications()
+            ->where('id', $notification)
+            ->firstOrFail();
+
+        $notificationModel->markAsRead();
+
+        $resolvedUrl = NotificationLinkResolver::resolve($notificationModel->data);
+
+        if (!$resolvedUrl) {
+            return redirect()
+                ->route('notifications.index')
+                ->with('error', 'This notification target is no longer available.');
+        }
+
+        return redirect()->to($resolvedUrl);
+    }
+
     public function markRead(string $notification)
     {
         $notificationModel = Auth::user()

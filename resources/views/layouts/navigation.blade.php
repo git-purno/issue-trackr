@@ -24,6 +24,9 @@ Change Requests
 
 <x-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
 Notifications
+@if (auth()->user()?->unreadNotifications()->count())
+<span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">{{ auth()->user()->unreadNotifications()->count() }}</span>
+@endif
 </x-nav-link>
 
 @if (auth()->user()?->hasRole('admin', 'manager', 'analyst'))
@@ -40,9 +43,6 @@ Reports
 <x-slot name="trigger">
 <button class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white rounded-md hover:text-gray-700">
 <div>{{ Auth::user()->name }}</div>
-@if (Auth::user()->unreadNotifications()->count())
-<span class="ml-3 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">{{ Auth::user()->unreadNotifications()->count() }}</span>
-@endif
 <div class="ms-2">
 <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -55,12 +55,6 @@ Reports
 <div class="px-4 py-2 text-xs uppercase tracking-widest text-slate-400">
 {{ Auth::user()->role }}
 </div>
-<x-dropdown-link :href="route('notifications.index')">
-Notifications
-@if (Auth::user()->unreadNotifications()->count())
-<span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">{{ Auth::user()->unreadNotifications()->count() }}</span>
-@endif
-</x-dropdown-link>
 @if (Auth::user()->hasRole('admin', 'manager', 'analyst'))
 <x-dropdown-link :href="route('reports.index')">
 Reports
@@ -113,6 +107,9 @@ Change Requests
 </x-responsive-nav-link>
 <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
 Notifications
+@if (auth()->user()?->unreadNotifications()->count())
+<span class="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">{{ auth()->user()->unreadNotifications()->count() }}</span>
+@endif
 </x-responsive-nav-link>
 @if (auth()->user()?->hasRole('admin', 'manager', 'analyst'))
 <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
